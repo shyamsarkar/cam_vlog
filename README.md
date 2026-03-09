@@ -3,7 +3,7 @@
 A minimal Chrome extension to record your webcam directly from the browser — no software install required.
 
 ![CamVlog Screenshot](screenshot.png)
-
+![CamVlog Screenshot 2](screenshot2.png)
 ---
 
 ## Features

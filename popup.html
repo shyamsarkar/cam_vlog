@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CamVlog</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f8f7f4;
+      --surface: #ffffff;
+      --border: #e8e5e0;
+      --text: #1a1816;
+      --muted: #9a948a;
+      --accent: #d94f3d;
+      --accent-hover: #c0402f;
+      --green: #3a7d5c;
+      --green-hover: #2e6349;
+      --radius: 10px;
+    }
+
+    body {
+      width: 340px;
+      background: var(--bg);
+      font-family: 'DM Sans', sans-serif;
+      color: var(--text);
+      padding: 16px;
+      user-select: none;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .logo-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--accent);
+      transition: background 0.3s;
+    }
+
+    .logo-dot.recording {
+      background: var(--accent);
+      animation: pulse 1.2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    .logo-name {
+      font-size: 15px;
+      font-weight: 500;
+      letter-spacing: -0.3px;
+      color: var(--text);
+    }
+
+    .logo-name span {
+      color: var(--accent);
+    }
+
+    .timer {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+      transition: color 0.3s;
+    }
+
+    .timer.active {
+      color: var(--accent);
+    }
+
+    /* Video preview */
+    .preview-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #1a1816;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+
+    #preview {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transform: scaleX(-1); /* mirror effect */
+    }
+
+    .preview-placeholder {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: #4a4540;
+    }
+
+    .preview-placeholder svg {
+      opacity: 0.5;
+    }
+
+    .preview-placeholder p {
+      font-size: 12px;
+      opacity: 0.5;
+    }
+
+    .rec-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(217, 79, 61, 0.92);
+      color: white;
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: none;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .rec-badge.visible {
+      display: flex;
+    }
+
+    .rec-badge-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: white;
+      animation: pulse 1s infinite;
+    }
+
+    /* Controls */
+    .controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 10px 14px;
+      border: none;
+      border-radius: var(--radius);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+    }
+
+    .btn-record {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-record:not(:disabled):hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-stop {
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-stop:not(:disabled):hover {
+      background: var(--border);
+      transform: translateY(-1px);
+    }
+
+    /* Download area */
+    .download-area {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      animation: fadeIn 0.2s ease;
+    }
+
+    .download-area.visible {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .download-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .download-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .download-meta {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .btn-download {
+      background: var(--green);
+      color: white;
+      border: none;
+      border-radius: 7px;
+      padding: 8px 14px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-download:hover {
+      background: var(--green-hover);
+      transform: translateY(-1px);
+    }
+
+    /* Status bar */
+    .status {
+      margin-top: 10px;
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+      min-height: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">
+      <div class="logo-dot" id="logoDot"></div>
+      <div class="logo-name">Cam<span>Vlog</span></div>
+    </div>
+    <div class="timer" id="timer">00:00</div>
+  </div>
+
+  <div class="preview-wrap">
+    <video id="preview" autoplay muted playsinline></video>
+    <div class="preview-placeholder" id="placeholder">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M15 10l4.553-2.07A1 1 0 0121 8.87v6.26a1 1 0 01-1.447.9L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+      </svg>
+      <p>Camera loading…</p>
+    </div>
+    <div class="rec-badge" id="recBadge">
+      <div class="rec-badge-dot"></div>
+      REC
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-record" id="btnRecord" disabled>
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor">
+        <circle cx="6" cy="6" r="5"/>
+      </svg>
+      Record
+    </button>
+    <button class="btn btn-stop" id="btnStop" disabled>
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor">
+        <rect width="10" height="10" rx="2"/>
+      </svg>
+      Stop
+    </button>
+  </div>
+
+  <div class="download-area" id="downloadArea">
+    <div class="download-info">
+      <div class="download-label">Recording ready</div>
+      <div class="download-meta" id="downloadMeta">—</div>
+    </div>
+    <a class="btn-download" id="btnDownload" download="camvlog.webm">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <path d="M12 5v14M5 12l7 7 7-7"/>
+      </svg>
+      Save
+    </a>
+  </div>
+
+  <div class="status" id="status">Requesting camera access…</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -84,7 +84,7 @@ async function initCamera() {
     } else {
       setStatus(`Error: ${err.message}`);
     }
-    console.error('CamVlog camera error:', err);
+    console.error('CamVlog camera error:', err.name, err.message);
   }
 }
 
@@ -98,11 +98,14 @@ function startRecording() {
   downloadArea.classList.remove('visible');
 
   // Pick best supported format
-  const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
-    ? 'video/webm;codecs=vp9,opus'
-    : 'video/webm';
+  const mimeType = [
+    'video/webm;codecs=vp9,opus',
+    'video/webm;codecs=vp8,opus',
+    'video/webm;codecs=h264',
+    'video/webm',
+  ].find(type => MediaRecorder.isTypeSupported(type)) || '';
 
-  recorder = new MediaRecorder(mediaStream, { mimeType });
+  recorder = new MediaRecorder(mediaStream, mimeType ? { mimeType } : {});
 
   recorder.ondataavailable = (e) => {
     if (e.data && e.data.size > 0) chunks.push(e.data);
